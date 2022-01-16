@@ -3,17 +3,23 @@ import sys
 import time
 import keyboard
 import webbrowser
+from pygame import mixer
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
 # Base Values
-wrapLimit = 100
+wrapLimit = 100 # How many characters can be put onto one line before the program tries to wrap it.
 
 storyNames = []
 
+mixer.init()
+
+# Initilising all story names. Important for search feature.
 print("Loading (This could take a while)...")
 for name in os.listdir("STORIES/"):
     storyNames.append(name)
 
-def clearScreen():
+def clearScreen(): # Clears the screen.
     for i in range(0, 10):
         print("\n\n\n\n\n\n\n\n\n")
 
@@ -29,25 +35,64 @@ def readStory(chapters, chapterNames, scrollSpeed, initialChapter):
         wordWrap = 0
         while keyboard.is_pressed("enter"):
             pass
+        searchingCommand = False
+        instantSkip = False
+        commandEntered = ""
         for i in chapters[currentChapter][currentParagraph]:
-            if wordWrap < wrapLimit or i != " ":
-                sys.stdout.write(i)
-                wordWrap += 1
-            else:
-                sys.stdout.write("\n")
-                wordWrap = 0
-            if keyboard.is_pressed("enter"):
-                while keyboard.is_pressed("enter"):
-                    pass
-                break
-            time.sleep(scrollSpeed)
+            if searchingCommand and i != '}':
+                commandEntered += i
+
+            if i == "{":  # Command identified.
+                searchingCommand = True
+            elif i == "}":
+                searchingCommand = False
+                # Handling all commands:
+                if commandEntered == "sf":
+                    instantSkip = True
+                elif commandEntered[0] == 'p':
+                    commandContents = commandEntered.split(" ", 1)
+                    time.sleep(float(commandContents[1]))
+                    instantSkip = True
+                elif commandEntered[0] == 'm':
+                    commandContents = commandEntered.split(" ", 2)
+                    instantSkip = True
+                    if commandContents[1] == "STOP":
+                        mixer.music.stop()
+                    elif commandContents[1] == "FADE":
+                        mixer.music.fadeout(int(float(commandContents[2]) * 1000))
+                    else:
+                        mixer.music.load("MUSIC/" + commandContents[1])
+                        mixer.music.play(loops=-1)
+                elif commandEntered[0] == 'i':
+                    commandContents = commandEntered.split(" ", 1)
+                    img = mpimg.imread('IMAGES/' + commandContents[1])
+                    imgplot = plt.imshow(img)
+                    plt.axis('off')
+                    plt.show()
+                    instantSkip = True
+                commandEntered = ""
+
+            if not searchingCommand and i != '}':
+                if wordWrap < wrapLimit or i != " ":  # Handles word wrapping
+                    sys.stdout.write(i)
+                    wordWrap += 1
+                else:
+                    sys.stdout.write("\n")
+                    wordWrap = 0
+                if keyboard.is_pressed("enter"):
+                    while keyboard.is_pressed("enter"):
+                        pass
+                    break
+                time.sleep(scrollSpeed)
 
         print("\n")
-        option = raw_input("> ")
-        while keyboard.is_pressed("enter"):
-            pass
-        if option == "END":
-            isDone = True
+        if not instantSkip:
+            option = raw_input("> ")
+            while keyboard.is_pressed("enter"):
+                pass
+            if option == "END":
+                isDone = True
+        instantSkip = False
 
         currentParagraph += 1
         if (currentParagraph + 1) > len(chapters[currentChapter]):
@@ -220,6 +265,7 @@ def editStory(storyName):
                 raw_input()
             clearScreen()
         elif command == "edit chapters":
+            clearScreen()
             isDone3 = False
             while not isDone3:
                 print("Chapters:")
@@ -468,6 +514,8 @@ def getInput():
         print("\"create story\": Creates a new story.")
         print("\"browse\": Browse all stories you have created.")
         print("\"delete\": Delete a selected story.")
+        print("\"instructions\": Instructions on how to use commands in your stories.")
+        print("\"quit\": Exit the program.")
     elif command == "create story":
         clearScreen()
         name = raw_input("Enter the name of your story: ")
@@ -594,6 +642,11 @@ def getInput():
         else:
             print("Error - Unrecognisable story.")
             raw_input()
+    elif command == "instructions":
+        clearScreen()
+        webbrowser.open("Comamnds.txt")
+    elif command == "quit":
+        sys.exit()
     else:
         print("Error - Unrecognisable command entered - " + command)
     getInput()
@@ -604,3 +657,4 @@ print("--- Made by Alexander Nair ---")
 print("\n---Type help for all commands---")
 
 getInput()
+mixer.quit()

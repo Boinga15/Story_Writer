@@ -1,0 +1,20 @@
+Stories can use commands inside of curly brackets {} to add a more interactive element to them or just to improve the experience. Below you will find all of the commands that are available to you. Anything inside of [] should be replaced with an appropiate value.
+
+{sf} - Skips the current line at the end. Example:
+"This is how use can instantly skip past to the next line instead of waiting for the user to do so.{sf}"
+
+{p [TIME TO PAUSE IN SECONDS]} - Pauses the story for a certain number of seconds. Example:
+"{p 1}"
+
+{m [MUSIC FILE NAME]} - Plays a music file located inside of the MUSIC folder. The entire file name should be written out. Example:
+
+"{m Battle1.wav}"
+
+{m STOP} - Stops the current music being played instantly. Example:
+"{m STOP}"
+
+{m FADE [TIME TO FADEOUT IN SECONDS]} - Fades out the music within a certain number of seconds. Does not pause the program while doing so. Example:
+"{m FADE 1.5}"
+
+{i [IMAGE FILE NAME]} - Displays an image on the screen located inside of the IMAGES folder. The entire file name should be written out. Story only continues once user closes the file. Example:
+"{i Window.jpg}"

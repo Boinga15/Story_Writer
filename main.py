@@ -23,7 +23,8 @@ def clearScreen(): # Clears the screen.
     for i in range(0, 10):
         print("\n\n\n\n\n\n\n\n\n")
 
-def readStory(chapters, chapterNames, scrollSpeed, initialChapter):
+def readStory(chapters, chapterNames, scrollSpeed, initialChapter, storyName):
+    name = storyName
     isDone = False
     currentChapter = initialChapter
     currentParagraph = 0
@@ -61,11 +62,11 @@ def readStory(chapters, chapterNames, scrollSpeed, initialChapter):
                     elif commandContents[1] == "FADE":
                         mixer.music.fadeout(int(float(commandContents[2]) * 1000))
                     else:
-                        mixer.music.load("MUSIC/" + commandContents[1])
+                        mixer.music.load("MUSIC/" + name + "/" + commandContents[1])
                         mixer.music.play(loops=-1)
                 elif commandEntered[0] == 'i':
                     commandContents = commandEntered.split(" ", 1)
-                    img = mpimg.imread('IMAGES/' + commandContents[1])
+                    img = mpimg.imread('IMAGES/' + name + "/" + commandContents[1])
                     imgplot = plt.imshow(img)
                     plt.axis('off')
                     plt.show()
@@ -92,6 +93,7 @@ def readStory(chapters, chapterNames, scrollSpeed, initialChapter):
                 pass
             if option == "END":
                 isDone = True
+                mixer.music.stop()
         instantSkip = False
 
         currentParagraph += 1
@@ -103,9 +105,10 @@ def readStory(chapters, chapterNames, scrollSpeed, initialChapter):
                 clearScreen()
                 print("End of story. Press enter to continue.")
                 raw_input("")
+                mixer.music.stop()
     clearScreen()
 
-def chapterSelect(chapters, chapterNames, scrollSpeed):
+def chapterSelect(chapters, chapterNames, scrollSpeed, storyName):
     clearScreen()
     isDone = False
 
@@ -118,8 +121,6 @@ def chapterSelect(chapters, chapterNames, scrollSpeed):
             print(chapterNames[index - 1])
             index += 1
 
-        print(chapterNames)
-
         print("\nType a chapter name to start reading from there.")
         print("Type |BACK| to go back.\n")
         chapter = raw_input("> ")
@@ -127,7 +128,7 @@ def chapterSelect(chapters, chapterNames, scrollSpeed):
         if chapter == "|BACK|":
             isDone = True
         elif chapter in chapterNames:
-            readStory(chapters, chapterNames, scrollSpeed, chapterNames.index(chapter))
+            readStory(chapters, chapterNames, scrollSpeed, chapterNames.index(chapter), storyName)
             isDone = True
         else:
             print("Error - Unrecognisable command entered - " + chapter)
@@ -461,9 +462,9 @@ def showStory(storyName):
         command = raw_input("> ")
 
         if command == "read story":
-            readStory(chapters, chapterNames, scrollSpeed, 0)
+            readStory(chapters, chapterNames, scrollSpeed, 0, name)
         elif command == "chapter select":
-            chapterSelect(chapters, chapterNames, scrollSpeed)
+            chapterSelect(chapters, chapterNames, scrollSpeed, name)
         elif command == "edit story":
             name = editStory(name)
             chapterNames = []
@@ -537,6 +538,8 @@ def getInput():
             successful = False
             try:
                 os.mkdir("STORIES/" + name)
+                os.mkdir("MUSIC/" + name)
+                os.mkdir("IMAGES/" + name)
                 f = open("STORIES/" + name + "/DESC.txt", "w")
                 f.write(description)
                 f.close()
